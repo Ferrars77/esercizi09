@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Random;
 
@@ -43,7 +44,15 @@ public class BadIOGUI {
         final JPanel canvas = new JPanel();
         canvas.setLayout(new BorderLayout());
         final JButton write = new JButton("Write on file");
-        canvas.add(write, BorderLayout.CENTER);
+        // EX 01.01 canvas.add(write, BorderLayout.CENTER);
+
+        final JPanel myPan = new JPanel();
+        myPan.setLayout(new BoxLayout(myPan, BoxLayout.LINE_AXIS));
+        canvas.add(myPan, BorderLayout.CENTER);
+        myPan.add(write);
+        // EX 01.02
+        final JButton read = new JButton("Read on file");
+        myPan.add(read);
         frame.setContentPane(canvas);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         /*
@@ -61,7 +70,32 @@ public class BadIOGUI {
                      * your UI becomes completely unresponsive.
                      */
                     try (PrintStream ps = new PrintStream(PATH, StandardCharsets.UTF_8)) {
-                        ps.print(randomGenerator.nextInt());
+                        ps.print("this is printed from the txt file");
+                    } catch (final IOException e) {
+                        JOptionPane.showMessageDialog(frame, e, "Error", JOptionPane.ERROR_MESSAGE);
+                        e.printStackTrace(); // NOPMD: allowed as this is just an exercise
+                    }
+                }
+            }
+        );
+        read.addActionListener(
+            new ActionListener() {
+                @Override
+                public void actionPerformed(final ActionEvent ignored) {
+                    /*
+                     * This would be VERY BAD in a real application.
+                     *
+                     * This makes the Event Dispatch Thread (EDT) work on an I/O
+                     * operation. I/O operations may take a long time, during which
+                     * your UI becomes completely unresponsive.
+                     */
+                    //System.out.println("ciao");
+                    
+
+                     try {
+                        final byte[] content = Files.readAllBytes(Path.of(PATH));
+                        final String text = new String(content, StandardCharsets.UTF_8);
+                        System.out.println(text);
                     } catch (final IOException e) {
                         JOptionPane.showMessageDialog(frame, e, "Error", JOptionPane.ERROR_MESSAGE);
                         e.printStackTrace(); // NOPMD: allowed as this is just an exercise
@@ -84,6 +118,7 @@ public class BadIOGUI {
         final int sw = (int) screen.getWidth();
         final int sh = (int) screen.getHeight();
         frame.setSize(sw / PROPORTION, sh / PROPORTION);
+        frame.pack();
         /*
          * Instead of appearing at (0,0), upper left corner of the screen, this
          * flag makes the OS window manager take care of the default positioning
